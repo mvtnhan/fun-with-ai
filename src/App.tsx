@@ -63,7 +63,7 @@ const App = () => {
         return b.created - a.created;
       })
     );
-    console.log("data", newData);
+    setQuery("");
     return result;
   }
 
@@ -80,10 +80,16 @@ const App = () => {
     >
       <h1>Fun with AI</h1>
       <TextField
+        type="text"
         label="Enter Prompt"
         multiline
         rows={8}
-        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Please enter your question..."
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value);
+        }}
+        focused
       />
       <Box
         sx={{
@@ -93,7 +99,12 @@ const App = () => {
           alignItems: "flex-end",
         }}
       >
-        <Button variant="contained" onClick={() => postData(dataPost)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            postData(dataPost);
+          }}
+        >
           Submit
         </Button>
       </Box>
@@ -104,7 +115,7 @@ const App = () => {
             container
             spacing={0}
             sx={{
-              p: 4,
+              p: 2,
               backgroundColor: "rgb(228, 228, 228)",
               borderRadius: 2,
               mt: 2,
