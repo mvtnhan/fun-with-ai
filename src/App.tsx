@@ -24,7 +24,11 @@ type DataItem = {
 
 const App = () => {
   const [query, setQuery] = useState("");
-  const [dataArray, setDataArray] = useState<DataItem[]>([]);
+  // const [dataArray, setDataArray] = useState<DataItem[]>(
+  //   localStorage.datas !== undefined ? JSON.parse(localStorage.datas) : []
+  // );
+  const dataArray: DataItem[] =
+    localStorage.datas !== undefined ? JSON.parse(localStorage.datas) : [];
 
   const dataPost = {
     prompt: `${query}`,
@@ -56,13 +60,14 @@ const App = () => {
       sesponse: result.choices[0].text,
     };
 
-    const newData = [...dataArray, dataAObj];
+    const newData = [...dataArray, dataAObj].sort((a, b) => {
+      return b.created - a.created;
+    });
 
-    setDataArray(
-      newData.sort((a, b) => {
-        return b.created - a.created;
-      })
-    );
+    localStorage.datas = JSON.stringify(newData);
+
+    // setDataArray(newData);
+
     setQuery("");
     return result;
   }
