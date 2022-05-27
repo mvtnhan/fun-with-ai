@@ -1,149 +1,114 @@
-import { useState } from 'react';
+import * as React from 'react';
 
-import { Box, Button, Grid, TextField } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
+import {
+    Box, Container, Drawer, Grid, Hidden, IconButton, Paper, Stack, Typography
+} from '@mui/material';
+import { grey } from '@mui/material/colors';
 
-type Respone = {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    text: string;
-    index: number;
-    logprobs: null;
-    finish_reason: string;
-  }[];
-};
+import Avatar from './Components/Avatar';
+import Chat from './Components/Chat';
+import SideBar from './Components/SideBar';
+import { useAppContext } from './Context/AppContext';
 
-type DataItem = {
-  id: string;
-  created: number;
-  prompt: string;
-  sesponse: string;
-};
-
-const App = () => {
-  const [query, setQuery] = useState("");
-  // const [dataArray, setDataArray] = useState<DataItem[]>(
-  //   localStorage.datas !== undefined ? JSON.parse(localStorage.datas) : []
-  // );
-  const dataArray: DataItem[] =
-    localStorage.datas !== undefined ? JSON.parse(localStorage.datas) : [];
-
-  const dataPost = {
-    prompt: `${query}`,
-    temperature: 0.5,
-    max_tokens: 64,
-    top_p: 1.0,
-    frequency_penalty: 0.0,
-    presence_penalty: 0.0,
-  };
-  const url = "https://api.openai.com/v1/engines/text-curie-001/completions";
-
-  async function postData(data = {}) {
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_OPENAI_SECRET}`,
-      },
-      body: JSON.stringify(data),
-    };
-
-    const response = await fetch(`${url}`, requestOptions);
-    const result: Respone = await response.json();
-
-    const dataAObj = {
-      id: result.id,
-      created: result.created,
-      prompt: query,
-      sesponse: result.choices[0].text,
-    };
-
-    const newData = [...dataArray, dataAObj].sort((a, b) => {
-      return b.created - a.created;
-    });
-
-    localStorage.datas = JSON.stringify(newData);
-
-    // setDataArray(newData);
-
-    setQuery("");
-    return result;
-  }
-
+function App() {
+  const { isDrawerOpen, toggleDrawer } = useAppContext();
   return (
-    <Box
-      sx={{
-        width: 800,
-        mt: 8,
-        mx: "auto",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-    >
-      <h1>Fun with AI</h1>
-      <TextField
-        type="text"
-        label="Enter Prompt"
-        multiline
-        rows={8}
-        placeholder="Please enter your question..."
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-        }}
-        focused
-      />
-      <Box
-        sx={{
-          mt: 1,
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "flex-end",
-        }}
-      >
-        <Button
-          variant="contained"
-          onClick={() => {
-            postData(dataPost);
+    <Box sx={{ bgColor: "#F4F5FA" }}>
+      <Container>
+        <Paper
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100vh - 2rem)",
+            m: 2,
+            position: "relative",
           }}
+          id="drawer-container"
         >
-          Submit
-        </Button>
-      </Box>
-
-      {dataArray.map((item, index) => (
-        <Box key={index}>
-          <Grid
-            container
-            spacing={0}
-            sx={{
-              p: 2,
-              backgroundColor: "rgb(228, 228, 228)",
-              borderRadius: 2,
-              mt: 2,
-            }}
-          >
-            <Grid item xs={4}>
-              Prompt:
+          <Grid container direction="row" height="100%">
+            <Grid item md={4} display={{ xs: "none", md: "flex" }}>
+              <SideBar />
             </Grid>
-            <Grid item xs={8}>
-              {item.prompt}
-            </Grid>
-
-            <Grid item xs={4} sx={{ mt: 1 }}>
-              Response:
-            </Grid>
-            <Grid item xs={8} sx={{ mt: 1 }}>
-              {item.sesponse}
+            <Grid item md={8} xs={12} height="100%">
+              <Drawer
+                open={isDrawerOpen}
+                onClose={toggleDrawer}
+                PaperProps={{ style: { position: "absolute", width: "350px" } }}
+                BackdropProps={{ style: { position: "absolute" } }}
+                ModalProps={{
+                  container: document.getElementById("drawer-container"),
+                  style: { position: "absolute" },
+                }}
+                sx={{
+                  ".MuiDrawer-paper": { borderRadius: 0 },
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
+              >
+                <SideBar />
+              </Drawer>
+              <Stack bgcolor="#F7F7F8" height="100%">
+                <ChatHeader />
+                <Chat />
+              </Stack>
             </Grid>
           </Grid>
-        </Box>
-      ))}
+        </Paper>
+      </Container>
     </Box>
   );
-};
+}
 
 export default App;
+
+function ChatHeader() {
+  const { model, toggleDrawer } = useAppContext();
+  return (
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      alignItems="center"
+      borderBottom={`1px solid ${grey[300]}`}
+    >
+      <Stack
+        direction="row"
+        spacing={2}
+        p="0.75rem 1.25rem"
+        alignItems="center"
+      >
+        <Hidden mdUp>
+          <IconButton onClick={toggleDrawer}>
+            <MenuIcon fontSize="large" />
+          </IconButton>
+        </Hidden>
+        <Avatar alt={model.name} src={model.avatar} status={model.status} />
+        <Stack>
+          <Typography variant="subtitle1" fontWeight={500} lineHeight={1.2}>
+            {`${model.name} (${model.engine})`}
+          </Typography>
+          <Hidden mdDown>
+            <Typography variant="caption" color={grey[500]}>
+              {`${model.level} - ${model.desc}`}
+            </Typography>
+          </Hidden>
+        </Stack>
+      </Stack>
+      <Stack direction="row" display={{ xs: "none", sm: "flex" }}>
+        <IconButton>
+          <PhoneOutlinedIcon />
+        </IconButton>
+        <IconButton>
+          <VideocamOutlinedIcon />
+        </IconButton>
+        <IconButton>
+          <SearchOutlinedIcon />
+        </IconButton>
+      </Stack>
+    </Stack>
+  );
+}
