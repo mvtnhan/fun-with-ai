@@ -58,7 +58,7 @@ const Chat: React.FunctionComponent<unknown> = () => {
               key={index}
             >
               <Avatar
-                src={isMine ? "../img/avatar/avt.png" : model.avatar}
+                src={isMine ? "../img/avatar/mine.png" : model.avatar}
                 sx={{ height: 32, width: 32 }}
               />
               <Message isMine={isMine}>{msg.message}</Message>

@@ -20,7 +20,7 @@ export default function SideBar() {
         borderBottom={`1px solid ${grey[300]}`}
       >
         <Stack direction="row" spacing={2} p="0.75rem 1.25rem">
-          <Avatar src="../img/avatar/avt.png" status={Status.ONLINE} />
+          <Avatar src="../img/avatar/mine.png" status={Status.ONLINE} />
         </Stack>
         <OutlinedInput
           size="small"
